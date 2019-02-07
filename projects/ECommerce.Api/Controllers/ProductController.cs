@@ -1,7 +1,14 @@
-﻿using ECommerce.Api.Models;
+﻿using AutoMapper;
+using ECommerce.Api.Models;
+using ECommerce.ProductCatalog.Communication;
+using ECommerce.ProductCatalog.Domain;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECommerce.Api.Controllers
 {
@@ -9,23 +16,28 @@ namespace ECommerce.Api.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private readonly IProductCatalogService _catalogService;
+        private readonly IMapper _mapper;
+
+        public ProductController(IMapper mapper)
+        {
+            _catalogService = ServiceProxy.Create<IProductCatalogService>(
+                new Uri("fabric:/ECommerce/ECommerce.ProductCatalog"),
+                new ServicePartitionKey(0));
+
+            _mapper = mapper;
+        }
+
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<ApiProduct>> Get()
+        public async Task<IEnumerable<ApiProduct>> Get()
         {
-            return new ApiProduct[]
-            {
-                new ApiProduct
-                {
-                    Id = Guid.NewGuid(),
-                    Description = "Test Product"
-                }
-            };
+            return (await _catalogService.GetAllProducts()).Select(_mapper.Map<ApiProduct>);
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<ApiProduct> Get(int id)
+        public async Task<ApiProduct> Get(int id)
         {
             return new ApiProduct
             {
@@ -36,8 +48,9 @@ namespace ECommerce.Api.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task Post([FromBody] ApiProduct product)
         {
+            await _catalogService.AddProduct(_mapper.Map<Product>(product));
         }
 
         // PUT api/values/5

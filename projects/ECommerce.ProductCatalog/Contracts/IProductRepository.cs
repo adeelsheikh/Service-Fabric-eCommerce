@@ -9,5 +9,7 @@ namespace ECommerce.ProductCatalog.Contracts
         Task<IEnumerable<Product>> GetAllProducts();
 
         Task AddProduct(Product product);
+
+        Task RemoveAll();
     }
 }

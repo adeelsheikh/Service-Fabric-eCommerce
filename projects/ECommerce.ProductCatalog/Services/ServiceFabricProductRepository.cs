@@ -51,5 +51,23 @@ namespace ECommerce.ProductCatalog.Services
 
             return result;
         }
+
+        public async Task RemoveAll()
+        {
+            using (var tx = _stateManager.CreateTransaction())
+            {
+                var enumerable = await ProductsCollection.CreateEnumerableAsync(tx, EnumerationMode.Unordered);
+
+                using (var enumerator = enumerable.GetAsyncEnumerator())
+                {
+                    while (await enumerator.MoveNextAsync(CancellationToken.None))
+                    {
+                        await ProductsCollection.TryRemoveAsync(tx, enumerator.Current.Key);
+                    }
+                }
+
+                await tx.CommitAsync();
+            }
+        }
     }
 }

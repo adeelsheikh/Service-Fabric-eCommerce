@@ -33,7 +33,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\projects\ECommerce.Api\ECommerce.Api.csproj" />
+    <ProjectReference Include="..\projects\ECommerce.CheckoutService\ECommerce.CheckoutService.csproj" />
     <ProjectReference Include="..\projects\ECommerce.ProductCatalog\ECommerce.ProductCatalog.csproj" />
+    <ProjectReference Include="..\projects\UserActor\UserActor.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>

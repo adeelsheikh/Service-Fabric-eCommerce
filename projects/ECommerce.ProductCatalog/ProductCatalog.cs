@@ -1,9 +1,7 @@
-﻿using ECommerce.ProductCatalog.Communication;
+﻿using ECommerce.ProductCatalog.Models;
 using ECommerce.ProductCatalog.Contracts;
-using ECommerce.ProductCatalog.Domain;
 using ECommerce.ProductCatalog.Services;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
 using System;
 using System.Collections.Generic;
@@ -11,6 +9,7 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 
 namespace ECommerce.ProductCatalog
 {
@@ -30,9 +29,19 @@ namespace ECommerce.ProductCatalog
             await _repo.AddProduct(product);
         }
 
+        public async Task DeleteProduct(Guid productId)
+        {
+            await _repo.DeleteProduct(productId);
+        }
+
         public async Task<IEnumerable<Product>> GetAllProducts()
         {
             return await _repo.GetAllProducts();
+        }
+
+        public async Task<Product> GetProduct(Guid productId)
+        {
+            return await _repo.GetProduct(productId);
         }
 
         /// <summary>
@@ -54,7 +63,7 @@ namespace ECommerce.ProductCatalog
         /// <param name="cancellationToken">Canceled when Service Fabric needs to shut down this service replica.</param>
         protected override async Task RunAsync(CancellationToken cancellationToken)
         {
-            _repo = new ServiceFabricProductRepository(StateManager);
+            _repo = new ProductRepository(StateManager);
 
             var products = await _repo.GetAllProducts();
 

@@ -1,5 +1,5 @@
 ﻿using ECommerce.ProductCatalog.Contracts;
-using ECommerce.ProductCatalog.Domain;
+using ECommerce.ProductCatalog.Models;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
 using System;
@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace ECommerce.ProductCatalog.Services
 {
-    public class ServiceFabricProductRepository : IProductRepository
+    public class ProductRepository : IProductRepository
     {
         private readonly IReliableStateManager _stateManager;
         private IReliableDictionary<Guid, Product> _productsCollection;
 
-        public ServiceFabricProductRepository(IReliableStateManager stateManager)
+        public ProductRepository(IReliableStateManager stateManager)
         {
             _stateManager = stateManager;
         }
@@ -27,6 +27,16 @@ namespace ECommerce.ProductCatalog.Services
             using (var tx = _stateManager.CreateTransaction())
             {
                 await ProductsCollection.AddOrUpdateAsync(tx, product.Id, product, (id, value) => product);
+
+                await tx.CommitAsync();
+            }
+        }
+
+        public async Task DeleteProduct(Guid productId)
+        {
+            using (var tx = _stateManager.CreateTransaction())
+            {
+                await ProductsCollection.TryRemoveAsync(tx, productId);
 
                 await tx.CommitAsync();
             }
@@ -50,6 +60,16 @@ namespace ECommerce.ProductCatalog.Services
             }
 
             return result;
+        }
+
+        public async Task<Product> GetProduct(Guid productId)
+        {
+            using (var tx = _stateManager.CreateTransaction())
+            {
+                var product = await ProductsCollection.TryGetValueAsync(tx, productId);
+
+                return product.HasValue ? product.Value : null;
+            }
         }
 
         public async Task RemoveAll()

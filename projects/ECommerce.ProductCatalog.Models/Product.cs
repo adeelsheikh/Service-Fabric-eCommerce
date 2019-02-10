@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ECommerce.ProductCatalog.Domain
+namespace ECommerce.ProductCatalog.Models
 {
     public class Product
     {

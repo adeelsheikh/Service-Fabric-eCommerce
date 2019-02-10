@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
 using ECommerce.Api.Models;
-using ECommerce.ProductCatalog.Communication;
-using ECommerce.ProductCatalog.Domain;
+using ECommerce.ProductCatalog.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.ServiceFabric.Services.Client;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Api.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
         private readonly IProductCatalogService _catalogService;
@@ -21,9 +18,7 @@ namespace ECommerce.Api.Controllers
 
         public ProductController(IMapper mapper)
         {
-            _catalogService = ServiceProxy.Create<IProductCatalogService>(
-                new Uri("fabric:/ECommerce/ECommerce.ProductCatalog"),
-                new ServicePartitionKey(0));
+            _catalogService = ProductCatalogServiceResolver.Resolve();
 
             _mapper = mapper;
         }
@@ -37,20 +32,19 @@ namespace ECommerce.Api.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public async Task<ApiProduct> Get(int id)
+        public async Task<ApiProduct> Get(Guid id)
         {
-            return new ApiProduct
-            {
-                Id = Guid.NewGuid(),
-                Description = "Test Product"
-            };
+            return _mapper.Map<ApiProduct>(await _catalogService.GetProduct(id));
         }
 
         // POST api/values
         [HttpPost]
         public async Task Post([FromBody] ApiProduct product)
         {
-            await _catalogService.AddProduct(_mapper.Map<Product>(product));
+            var dbProduct = _mapper.Map<Product>(product);
+            dbProduct.Availability = 50;
+
+            await _catalogService.AddProduct(dbProduct);
         }
 
         // PUT api/values/5
@@ -61,8 +55,9 @@ namespace ECommerce.Api.Controllers
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(Guid id)
         {
+            await _catalogService.DeleteProduct(id);
         }
     }
 }

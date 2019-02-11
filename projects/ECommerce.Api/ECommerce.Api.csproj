@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ECommerce.CheckoutService.Models\ECommerce.CheckoutService.Models.csproj" />
     <ProjectReference Include="..\ECommerce.ProductCatalog.Models\ECommerce.ProductCatalog.Models.csproj" />
+    <ProjectReference Include="..\StatefulTestService.Models\StatefulTestService.Models.csproj" />
     <ProjectReference Include="..\UserActor.Interfaces\UserActor.Interfaces.csproj" />
   </ItemGroup>
 
